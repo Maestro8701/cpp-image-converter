@@ -9,8 +9,7 @@ using namespace std;
 namespace img_lib {
 
 PACKED_STRUCT_BEGIN BitmapFileHeader {
-    char a = 'B';
-    char b = 'M';
+    std::array<char, 2> signature = {'B', 'M'};
     unsigned int size = 0; // Расчетный размер
     unsigned int reserve = 0; // Заполненные нулями
     unsigned int step = 54; // Размер заголовка
@@ -72,7 +71,7 @@ bool SaveBMP(const Path& file, const Image& image) {
 Image LoadBMP(const Path& file) {
     ifstream ifs(file, ios::binary);
     if (!ifs) {
-        throw runtime_error("Cannot open file");
+        return {};
     }
 
     BitmapFileHeader bitmapfileheader;
@@ -81,9 +80,9 @@ Image LoadBMP(const Path& file) {
     ifs.read(reinterpret_cast<char*>(&bitmapfileheader), sizeof(bitmapfileheader));
     ifs.read(reinterpret_cast<char*>(&bitmapinfoheader), sizeof(bitmapinfoheader));
 
-    if (bitmapfileheader.a != 'B' || bitmapfileheader.b != 'M') {
+    if (bitmapfileheader.signature[0] != 'B' || bitmapfileheader.signature[1] != 'M') {
         throw runtime_error("Invalid BMP file");
-    } 
+    }
 
     Image result(bitmapinfoheader.width, bitmapinfoheader.height, Color::Black());
     std::vector<char> buffer(bitmapinfoheader.width * 3);
